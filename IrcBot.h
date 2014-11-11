@@ -50,6 +50,13 @@ public:
     void delOp(std::string msg);
     bool isOp(std::string pseudo);
 
+    void timeout(std::string pseudo, int time);
+
+    int occurrences(std::string toSearch, std::string searchFor);
+    int arrOccurrences(std::string toSearch, std::vector<std::string> arr);
+    int capsNbr(std::string toSearch);
+    int emoteNbr(std::string toSearch);
+
 private:
 	char *port;
 	int s; //descripteur de socket
@@ -73,6 +80,7 @@ private:
 	bool nazi;
 	std::vector<std::string> commands[2];
 	std::vector<std::string> ops;
+	int punishmentTable[7];
 
 };
 

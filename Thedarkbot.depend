@@ -3,11 +3,11 @@
 	<iostream>
 	"IrcBot.h"
 
-1415472395 /home/gaetan/Documents/CodeBlocks/Thedarkbot/IrcBot.h
+1415676664 /home/gaetan/Documents/CodeBlocks/Thedarkbot/IrcBot.h
 	<string>
 	<vector>
 
-1415662524 source:/home/gaetan/Documents/CodeBlocks/Thedarkbot/IrcBot.cpp
+1415677274 source:/home/gaetan/Documents/CodeBlocks/Thedarkbot/IrcBot.cpp
 	"IrcBot.h"
 	<iostream>
 	<stdio.h>
@@ -27,4 +27,5 @@
 	<algorithm>
 	<vector>
 	<fstream>
+	<sstream>
 

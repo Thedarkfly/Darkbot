@@ -25,11 +25,11 @@
 #include <algorithm>
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
 #define MAXDATASIZE 1000
-
 
 IrcBot::IrcBot(char * _nick, char * _pass, char * _channel)
 {
@@ -52,6 +52,13 @@ void IrcBot::start()
     activate = true;
     nazi = false;
     srand(time(0));
+    punishmentTable[0] = 5;
+    punishmentTable[1] = 60;
+    punishmentTable[2] = 300;
+    punishmentTable[3] = 600;
+    punishmentTable[4] = 1800;
+    punishmentTable[5] = 3600;
+    punishmentTable[6] = 28800;
 
 	struct addrinfo hints, *servinfo;
 
@@ -356,12 +363,9 @@ char* IrcBot::convert(string toConvert)
 
 void IrcBot::sendMessage(string msg)
 {//Envoie un message sur le chat
-    if(activate)
-    {
-        string strChannel(channel);
-        char* data = convert("PRIVMSG #" + strChannel + " :" + msg + "\r\n");
-        sendData(data);
-    }
+    string strChannel(channel);
+    char* data = convert("PRIVMSG #" + strChannel + " :" + msg + "\r\n");
+    sendData(data);
 }
 
 
@@ -539,225 +543,264 @@ void IrcBot::msgHandel(char * buf)
 {//Reagit aux evenements sur le chat
     string str(buf);
 
-    //REACTION TEXTUELLE
-    if(stringSearch(str, "PRIVMSG #"))
+    if(activate)
     {
-        string strChannel(channel);
-        string message = getMessage(str);
-        string neutralMessage = transformToNeutral(message);
-        string pseudo = getPseudo(str);
-
-        //Y A-T-IL UN LIVE DE PREVU ?
-        if(stringSearch(neutralMessage, "live") && (stringSearch(message, "?"))
-            && (stringSearch(neutralMessage, "ce soir") || stringSearch(neutralMessage, "aujourdhui") || stringSearch(neutralMessage, "prévu")
-            || stringSearch(neutralMessage, "quand") || stringSearch(neutralMessage, "kan")))
+        //REACTION TEXTUELLE
+        if(stringSearch(str, "PRIVMSG #"))
         {
-            if(livePrevu)
-                sendMessage("Il y a un live prévu, " + pseudo + " ! Mais on ne sait pas quand. MrDestructoid");
-            else
-                sendMessage("Aucun live de prévu aujourd'hui, désolé " + pseudo + ". Vérifie régulièrement les réseaux sociaux.");
-        }
+            string strChannel(channel);
+            string message = getMessage(str);
+            string neutralMessage = transformToNeutral(message);
+            string pseudo = getPseudo(str);
 
-        //REACTIONS BANALES
-        else if(stringSearch(neutralMessage, "too many cooks"))
-        {
-            sendMessage("TOO MANNY COOKS !");
-        }
-
-        else if(stringSearch(neutralMessage,"et toi darkbot"))
-        {
-            int random = rand() % 6;
-
-            switch (random)
+            //Y A-T-IL UN LIVE DE PREVU ?
+            if(stringSearch(neutralMessage, "live") && (stringSearch(message, "?"))
+                && (stringSearch(neutralMessage, "ce soir") || stringSearch(neutralMessage, "aujourdhui") || stringSearch(neutralMessage, "prévu")
+                || stringSearch(neutralMessage, "quand") || stringSearch(neutralMessage, "kan")))
             {
-                case 0:
-                    sendMessage("Posé, merci.");
-                    break;
-                case 1:
-                    sendMessage("Toujours en vie, apparemment.");
-                    break;
-                case 2:
-                    sendMessage("J'en sais rien j'suis un bot.");
-                    break;
-                case 3:
-                    sendMessage("Mal, ma copine m'a lâché. :(");
-                    break;
-                case 4:
-                    sendMessage("Je sais pas, devine.");
-                    break;
-                case 5:
-                    sendMessage("Demande à Darkfly, c'est pas à moi de décider.");
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        else if(stringSearch(neutralMessage,"autant pour moi"))
-        {
-            sendMessage("Au temps*");
-        }
-
-        else if(stringSearch(neutralMessage, "nightbot tried") && pseudo.compare("nightbot") == 0)
-        {
-            sendMessage("Tg Nightbot, tu sers à rien.");
-        }
-
-        else if(stringSearch(neutralMessage,"salut darkbot")
-            || stringSearch(neutralMessage,"bonjour darkbot")
-            || stringSearch(neutralMessage,"bonsoir darkbot")
-            || stringSearch(neutralMessage,"yo darkbot")
-            || stringSearch(neutralMessage,"yop darkbot")
-            || stringSearch(neutralMessage,"coucou darkbot")
-            || stringSearch(neutralMessage,"cc darkbot")
-            || stringSearch(neutralMessage,"slt darkbot")
-            || stringSearch(neutralMessage,"hey darkbot"))
-        {
-            sendMessage("Salut " + pseudo + ", comment ça va ?");
-        }
-
-        else if(stringSearch(neutralMessage,"au revoir darkbot")
-            || stringSearch(neutralMessage,"bonne nuit darkbot")
-            || stringSearch(neutralMessage,"bonne journee darkbot")
-            || stringSearch(neutralMessage,"a la prochaine darkbot")
-            || stringSearch(neutralMessage,"bye darkbot")
-            || stringSearch(neutralMessage,"ciao darkbot")
-            || stringSearch(neutralMessage,"a plus darkbot")
-            || stringSearch(neutralMessage,"a toute darkbot")
-            || stringSearch(neutralMessage,"a tout a lheure darkbot")
-            || stringSearch(neutralMessage,"a tantot darkbot")
-            || stringSearch(neutralMessage,"a bientot darkbot"))
-        {
-            sendMessage("À très bientôt " + pseudo + ", j'espère. o/");
-        }
-
-        else if(stringSearch(neutralMessage,"thedarkbot"))
-        {
-            sendMessage("On est entre potes " + pseudo + ", tu peux m'appeler Darkbot. <3");
-        }
-
-        //COMMANDES
-        if(stringSearch(message,"?") && (isOp(pseudo) || pseudo.compare("thedarkfly") == 0))
-        {
-            string command(getCommand(message));
-
-            commandCalled(command);
-
-            if(command.compare("addcom") == 0)
-            {
-                string toAdd(getArgument(message));
-                string commandToAdd = getCommand(toAdd);
-
-                if(toAdd.length() - commandToAdd.length() <= 2)
-                    sendMessage("Connard de " + pseudo + ", il manque quelque chose, là. Crétin.");
+                if(livePrevu)
+                    sendMessage("Il y a un live prévu, " + pseudo + " ! Mais on ne sait pas quand. MrDestructoid");
                 else
-                {
-                    string textToAdd = toAdd.substr(2 + commandToAdd.length());
-                    sendMessage(pseudo + ", " + addCommand(commandToAdd, textToAdd));
-                }
+                    sendMessage("Aucun live de prévu aujourd'hui, désolé " + pseudo + ". Vérifie régulièrement les réseaux sociaux.");
             }
-            else if(command.compare("delcom") == 0)
-            {
-                string toDel(getArgument(message));
-                string commandToDel = getCommand(toDel);
 
-                sendMessage(pseudo + ", " + delCommand(commandToDel));
-            }
-            else if(command.compare("editcom") == 0)
+            //REACTIONS BANALES
+            else if(stringSearch(neutralMessage, "too many cooks"))
             {
-                string toEdit(getArgument(message));
-                string commandToEdit = getCommand(toEdit);
+                sendMessage("TOO MANNY COOKS !");
+            }
 
-                if(toEdit.length() - commandToEdit.length() <= 2)
-                    sendMessage("Connard de " + pseudo + ", il manque quelque chose, là. Crétin.");
-                else
-                {
-                    string textToEdit = toEdit.substr(2 + commandToEdit.length());
-                    sendMessage(pseudo + ", " + editCommand(commandToEdit, textToEdit));
-                }
-            }
-            else if(command.compare("desactive")== 0)
-                {
-                    sendMessage("Désactivation... À la prochaine o/");
-                    activate = false;
-                }
-            else if(command.compare("active") == 0)
-                {
-                    activate = true;
-                    sendMessage("Activation... Salut tout le monde !");
-                }
-            else if(command.compare("prevu") == 0)
+            else if(stringSearch(neutralMessage,"et toi darkbot"))
             {
-                string argument(getArgument(message));
-                if(argument.compare("oui") == 0)
-                {
-                    livePrevu = true;
-                    sendMessage("Message reçu : un live est prévu ce soir. Youpie !");
-                }
-                else if(argument.compare("non") == 0)
-                {
-                    livePrevu = false;
-                    sendMessage("Message reçu : aucun live de prévu ce soir. Flûte de zut.");
-                }
-            }
-            else if(command.compare("nazi") == 0)
-            {
-                string argument(getArgument(message));
-                if(argument.compare("on") == 0)
-                {
-                    nazi = true;
-                    sendMessage("Mode nazi activé. Ça va faire mal. MrDestructoid");
-                }
-                else if(argument.compare("off"))
-                {
-                    nazi = false;
-                    sendMessage("Monde nazi désactivé. On s'est bien marré quand même !");
-                }
-            }
-            else if(command.compare("insulte") == 0)
-            {
-                string argument(getArgument(message));
-
                 int random = rand() % 6;
 
                 switch (random)
                 {
                     case 0:
-                        sendMessage("Pd de " + argument + ".");
+                        sendMessage("Posé, merci.");
                         break;
                     case 1:
-                        sendMessage(argument + ", t'es un connard.");
+                        sendMessage("Toujours en vie, apparemment.");
                         break;
                     case 2:
-                        sendMessage("Je t'emmerde, " + argument + ".");
+                        sendMessage("J'en sais rien j'suis un bot.");
                         break;
                     case 3:
-                        sendMessage("Va bien t'faire f*tre, " + argument + ".");
+                        sendMessage("Mal, ma copine m'a lâché. :(");
                         break;
                     case 4:
-                        sendMessage("Je te méprise, " + argument + ". Cordialement.");
+                        sendMessage("Je sais pas, devine.");
                         break;
                     case 5:
-                        sendMessage(argument + ", tu sens pas bon des pieds.");
+                        sendMessage("Demande à Darkfly, c'est pas à moi de décider.");
                         break;
                     default:
                         break;
                 }
             }
+
+            else if(stringSearch(neutralMessage,"autant pour moi"))
+            {
+                sendMessage("Au temps*");
+            }
+
+            else if(stringSearch(neutralMessage, "nightbot tried") && pseudo.compare("nightbot") == 0)
+            {
+                sendMessage("Tg Nightbot, tu sers à rien.");
+            }
+
+            else if(stringSearch(neutralMessage,"salut darkbot")
+                || stringSearch(neutralMessage,"bonjour darkbot")
+                || stringSearch(neutralMessage,"bonsoir darkbot")
+                || stringSearch(neutralMessage,"yo darkbot")
+                || stringSearch(neutralMessage,"yop darkbot")
+                || stringSearch(neutralMessage,"coucou darkbot")
+                || stringSearch(neutralMessage,"cc darkbot")
+                || stringSearch(neutralMessage,"slt darkbot")
+                || stringSearch(neutralMessage,"hey darkbot"))
+            {
+                sendMessage("Salut " + pseudo + ", comment ça va ?");
+            }
+
+            else if(stringSearch(neutralMessage,"au revoir darkbot")
+                || stringSearch(neutralMessage,"bonne nuit darkbot")
+                || stringSearch(neutralMessage,"bonne journee darkbot")
+                || stringSearch(neutralMessage,"a la prochaine darkbot")
+                || stringSearch(neutralMessage,"bye darkbot")
+                || stringSearch(neutralMessage,"ciao darkbot")
+                || stringSearch(neutralMessage,"a plus darkbot")
+                || stringSearch(neutralMessage,"a toute darkbot")
+                || stringSearch(neutralMessage,"a tout a lheure darkbot")
+                || stringSearch(neutralMessage,"a tantot darkbot")
+                || stringSearch(neutralMessage,"a bientot darkbot"))
+            {
+                sendMessage("À très bientôt " + pseudo + ", j'espère. o/");
+            }
+
+            else if(stringSearch(neutralMessage,"thedarkbot"))
+            {
+                sendMessage("On est entre potes " + pseudo + ", tu peux m'appeler Darkbot. <3");
+            }
+
+            //COMMANDES
+            if(stringSearch(message,"?") && (isOp(pseudo) || pseudo.compare("thedarkfly") == 0))
+            {
+                string command(getCommand(message));
+
+                commandCalled(command);
+
+                if(command.compare("addcom") == 0)
+                {
+                    string toAdd(getArgument(message));
+                    string commandToAdd = getCommand(toAdd);
+
+                    if(toAdd.length() - commandToAdd.length() <= 2)
+                        sendMessage("Connard de " + pseudo + ", il manque quelque chose, là. Crétin.");
+                    else
+                    {
+                        string textToAdd = toAdd.substr(2 + commandToAdd.length());
+                        sendMessage(pseudo + ", " + addCommand(commandToAdd, textToAdd));
+                    }
+                }
+                else if(command.compare("delcom") == 0)
+                {
+                    string toDel(getArgument(message));
+                    string commandToDel = getCommand(toDel);
+
+                    sendMessage(pseudo + ", " + delCommand(commandToDel));
+                }
+                else if(command.compare("editcom") == 0)
+                {
+                    string toEdit(getArgument(message));
+                    string commandToEdit = getCommand(toEdit);
+
+                    if(toEdit.length() - commandToEdit.length() <= 2)
+                        sendMessage("Connard de " + pseudo + ", il manque quelque chose, là. Crétin.");
+                    else
+                    {
+                        string textToEdit = toEdit.substr(2 + commandToEdit.length());
+                        sendMessage(pseudo + ", " + editCommand(commandToEdit, textToEdit));
+                    }
+                }
+                else if(command.compare("desactive")== 0)
+                    {
+                        sendMessage("Désactivation... À la prochaine o/");
+                        activate = false;
+                    }
+                else if(command.compare("active") == 0)
+                    {
+                        activate = true;
+                        sendMessage("Activation... Salut tout le monde !");
+                    }
+                else if(command.compare("prevu") == 0)
+                {
+                    string argument(getArgument(message));
+                    if(argument.compare("oui") == 0)
+                    {
+                        livePrevu = true;
+                        sendMessage("Message reçu : un live est prévu ce soir. Youpie !");
+                    }
+                    else if(argument.compare("non") == 0)
+                    {
+                        livePrevu = false;
+                        sendMessage("Message reçu : aucun live de prévu ce soir. Flûte de zut.");
+                    }
+                }
+                else if(command.compare("nazi") == 0)
+                {
+                    string argument(getArgument(message));
+                    if(argument.compare("on") == 0)
+                    {
+                        nazi = true;
+                        sendMessage("Mode nazi activé. Ça va faire mal. MrDestructoid");
+                    }
+                    else if(argument.compare("off"))
+                    {
+                        nazi = false;
+                        sendMessage("Monde nazi désactivé. On s'est bien marré quand même !");
+                    }
+                }
+                else if(command.compare("insulte") == 0)
+                {
+                    string argument(getArgument(message));
+
+                    int random = rand() % 6;
+
+                    switch (random)
+                    {
+                        case 0:
+                            sendMessage("Pd de " + argument + ".");
+                            break;
+                        case 1:
+                            sendMessage(argument + ", t'es un connard.");
+                            break;
+                        case 2:
+                            sendMessage("Je t'emmerde, " + argument + ".");
+                            break;
+                        case 3:
+                            sendMessage("Va bien t'faire f*tre, " + argument + ".");
+                            break;
+                        case 4:
+                            sendMessage("Je te méprise, " + argument + ". Cordialement.");
+                            break;
+                        case 5:
+                            sendMessage(argument + ", tu sens pas bon des pieds.");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                //COMMANDES DE MODERATION
+                if(command.compare("purge") == 0)
+                {
+                    string argument(getArgument(message));
+                    timeout(argument, 1);
+                }
+                else if(command.compare("timeout") == 0)
+                {
+                    string argument(getArgument(message));
+                    timeout(argument, 60);
+                }
+                else if(command.compare("ban") == 0)
+                {
+                    string argument(getArgument(message));
+                    timeout(argument, -1);
+                }
+                else if(command.compare("unban") == 0)
+                {
+                    string argument(getArgument(message));
+                    timeout(argument, 0);
+                }
+                else if(command.compare("ciao") == 0)
+                {
+                    string argument(getArgument(message));
+                    timeout(argument, 28800);
+                }
+            }
+
+
+            //MODERATION AUTOMATIQUE
+            if(capsNbr(message) > 15) && !isOp(pseudo))
+            {
+                timeout(pseudo, 1);
+            }
+
+            if(emoteNbr(message) > 5) && !isOp(pseudo))
+            {
+                timeout(pseudo, 1);
+            }
+
         }
 
-
-        //OUTILS DE MODERATION
-
-    }
-
-    //DETECTION DES MODOS
-    else if(stringSearch(str, "MODE #"))
-    {
-        if(stringSearch(str, "+o"))
-            addOp(str);
-        else if(stringSearch(str, "-o"))
-            delOp(str);
+        //DETECTION DES MODOS
+        else if(stringSearch(str, "MODE #"))
+        {
+            if(stringSearch(str, "+o"))
+                addOp(str);
+            else if(stringSearch(str, "-o"))
+                delOp(str);
+        }
     }
 }
 
@@ -806,4 +849,92 @@ bool IrcBot::isOp(string pseudo)
         }
     }
     return false;
+}
+
+void IrcBot::timeout(string pseudo, int time)
+{//timeout un utilisateur.
+    //TEMPS NEGATIF : Ban définitif
+    //TEMPS NUL : Unban
+    //TEMPS POSITIF : Timeout avec duree specifiée
+    if(time < 0)
+        sendMessage("/ban " + pseudo);
+    else if(time == 0)
+        sendMessage("/unban " + pseudo);
+    else
+    {
+        string strTime;
+        ostringstream convert;
+        convert << time;
+        strTime = convert.str();
+
+        sendMessage("/timeout " + pseudo + " " + strTime);
+    }
+}
+
+int IrcBot::occurrences(string toSearch, string searchFor)
+{
+    int tsLen = toSearch.length();
+    int sfLen = searchFor.length();
+    int pos = toSearch.find(searchFor);
+
+    if(pos == string::npos)
+        return 0;
+    else
+        return 1 + occurrences(toSearch.substr(pos + sfLen), searchFor);
+}
+
+int IrcBot::arrOccurrences(string toSearch, vector<string> arr)
+{
+    int accumulator = 0;
+
+    for(vector<string>::iterator it = arr.begin(); it != arr.end(); it++)
+    {
+        accumulator += occurrences(toSearch, *it);
+    }
+
+    return accumulator;
+}
+
+int IrcBot::capsNbr(string toSearch)
+{
+    string arr[] = {"A", "B", "C", "D", "E", "F", "G", "H",
+        "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+        "U", "V", "W", "V", "X", "Y", "Z"};
+
+    vector<string> caps (arr, arr + sizeof(arr) / sizeof(string));
+
+    return arrOccurrences(toSearch, caps);
+}
+
+int IrcBot::emoteNbr(string toSearch)
+{
+    string arr[] = {"4Head", "aneleanele", "ArsonNoSexy",
+        "AsianGlow", "AtGL", "AtIvy", "AtWW", "BabyRage", "BatChest",
+        "BCWarrior", "BibleThump", "BigBrother", "BionicBunion", "BlargNaut",
+        "BloodTrail", "BORT", "BrainSlug", "BrokeBack", "BuddhaBar",
+        "CougarHunt", "DAESuppy", "DansGame", "DatSheffy", "DBstyle",
+        "DogFace", "EagleEye", "EleGiggle", "EvilFetus", "FailFish",
+        "FPSMarksman", "FrankerZ", "FreakinStinkin", "FUNgineer",
+        "FuzzyOtterOO", "GasJoker", "GingerPower", "GrammarKing",
+        "HassaanChop", "HassanChop", "HotPokket", "HumbleLife",
+        "ItsBoshyTime", "Jebaited", "JKanStyle", "JonCarnage",
+        "KAPOW", "Kappa", "Keepo", "KevinTurtle", "Kippa", "Kreygasm",
+        "KZassault", "KZcover", "KZguerilla", "KZhelghast", "KZowl",
+        "KZskull", "MechaSupes", "MrDestructoid", "MVGame", "NightBat",
+        "NinjaTroll", "NoNoSpot", "noScope", "OMGScoots", "OneHand",
+        "OpieOP", "OptimizePrime", "panicBasket", "PanicVis", "PazPazowitz",
+        "PeoplesChamp", "PermaSmug", "PicoMause", "PipeHype", "PJHarley",
+        "PJSalt", "PMSTwin", "PogChamp", "Poooound", "PRChase", "PunchTrees",
+        "RaccAttack", "RalpherZ", "RedCoat", "ResidentSleeper", "RitzMitz",
+        "RuleFive", "Shazam", "shazamicon", "ShazBotstix", "ShibeZ", "SMOrc",
+        "SMSkull", "SoBayed", "SoonerLater", "SriHead", "SSSsss",
+        "StoneLightning", "StrawBeary", "SuperVinlin", "SwiftRage",
+        "TehFunrun", "TF2John", "TheRinger", "TheTarFu", "TheThing",
+        "ThunBeast", "TinyFace", "TooSpicy", "TriHard", "UleetBackup",
+        "UncleNox", "UnSane", "Volcania", "WholeWheat", "WinWaker",
+        "WTRuck", "WutFace", "YouWHY"};
+
+    vector<string> emotes (arr, arr + sizeof(arr) / sizeof(string));
+
+    return arrOccurrences(toSearch, emotes);
 }
