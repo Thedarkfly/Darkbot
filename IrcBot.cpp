@@ -51,6 +51,9 @@ void IrcBot::start()
     livePrevu = false;
     activate = true;
     nazi = false;
+    muted = false;
+    finished = false;
+    interaction = true;
     srand(time(0));
     punishmentTable[0] = 5;
     punishmentTable[1] = 60;
@@ -363,9 +366,12 @@ char* IrcBot::convert(string toConvert)
 
 void IrcBot::sendMessage(string msg)
 {//Envoie un message sur le chat
-    string strChannel(channel);
-    char* data = convert("PRIVMSG #" + strChannel + " :" + msg + "\r\n");
-    sendData(data);
+    if(!muted)
+    {
+        string strChannel(channel);
+        char* data = convert("PRIVMSG #" + strChannel + " :" + msg + "\r\n");
+        sendData(data);
+    }
 }
 
 
@@ -553,93 +559,105 @@ void IrcBot::msgHandel(char * buf)
             string neutralMessage = transformToNeutral(message);
             string pseudo = getPseudo(str);
 
-            //Y A-T-IL UN LIVE DE PREVU ?
-            if(stringSearch(neutralMessage, "live") && (stringSearch(message, "?"))
-                && (stringSearch(neutralMessage, "ce soir") || stringSearch(neutralMessage, "aujourdhui") || stringSearch(neutralMessage, "prévu")
-                || stringSearch(neutralMessage, "quand") || stringSearch(neutralMessage, "kan")))
+            if(interaction)
             {
-                if(livePrevu)
-                    sendMessage("Il y a un live prévu, " + pseudo + " ! Mais on ne sait pas quand. MrDestructoid");
-                else
-                    sendMessage("Aucun live de prévu aujourd'hui, désolé " + pseudo + ". Vérifie régulièrement les réseaux sociaux.");
-            }
-
-            //REACTIONS BANALES
-            else if(stringSearch(neutralMessage, "too many cooks"))
-            {
-                sendMessage("TOO MANNY COOKS !");
-            }
-
-            else if(stringSearch(neutralMessage,"et toi darkbot"))
-            {
-                int random = rand() % 6;
-
-                switch (random)
+                //Y A-T-IL UN LIVE DE PREVU ?
+                if((stringSearch(neutralMessage, "live")
+                        || stringSearch(neutralMessage, "stream"))
+                    && (stringSearch(message, "?"))
+                    && (stringSearch(neutralMessage, "ce soir")
+                        || stringSearch(neutralMessage, "aujourdhui")
+                        || stringSearch(neutralMessage, "prévu")
+                        || stringSearch(neutralMessage, "quand")
+                        || stringSearch(neutralMessage, "kan")))
                 {
-                    case 0:
-                        sendMessage("Posé, merci.");
-                        break;
-                    case 1:
-                        sendMessage("Toujours en vie, apparemment.");
-                        break;
-                    case 2:
-                        sendMessage("J'en sais rien j'suis un bot.");
-                        break;
-                    case 3:
-                        sendMessage("Mal, ma copine m'a lâché. :(");
-                        break;
-                    case 4:
-                        sendMessage("Je sais pas, devine.");
-                        break;
-                    case 5:
-                        sendMessage("Demande à Darkfly, c'est pas à moi de décider.");
-                        break;
-                    default:
-                        break;
+                    if(livePrevu)
+                        sendMessage("Il y a un live prévu, " + pseudo + " ! Mais on ne sait pas quand.");
+                    else
+                        sendMessage("Aucun live de prévu aujourd'hui, désolé " + pseudo + ". Vérifie régulièrement les réseaux sociaux.");
                 }
-            }
+                else if((stringSearch(neutralMessage, "live")
+                        || stringSearch(neutralMessage, "stream"))
+                    && (stringSearch(message, "?"))
+                    && (stringSearch(message, "fini")
+                        || stringSearch(message, "termine")))
+                {
+                    if(finished)
+                        sendMessage("Le live est terminé. La rediffusion est disponible ici : http://wankil.reddit.com");
+                }
 
-            else if(stringSearch(neutralMessage,"autant pour moi"))
-            {
-                sendMessage("Au temps*");
-            }
+                //REACTIONS BANALES
+                else if(stringSearch(neutralMessage, "too many cooks"))
+                {
+                    sendMessage("TOO MANY COOKS !");
+                }
 
-            else if(stringSearch(neutralMessage, "nightbot tried") && pseudo.compare("nightbot") == 0)
-            {
-                sendMessage("Tg Nightbot, tu sers à rien.");
-            }
+                else if(stringSearch(neutralMessage,"et toi darkbot"))
+                {
+                    int random = rand() % 6;
 
-            else if(stringSearch(neutralMessage,"salut darkbot")
-                || stringSearch(neutralMessage,"bonjour darkbot")
-                || stringSearch(neutralMessage,"bonsoir darkbot")
-                || stringSearch(neutralMessage,"yo darkbot")
-                || stringSearch(neutralMessage,"yop darkbot")
-                || stringSearch(neutralMessage,"coucou darkbot")
-                || stringSearch(neutralMessage,"cc darkbot")
-                || stringSearch(neutralMessage,"slt darkbot")
-                || stringSearch(neutralMessage,"hey darkbot"))
-            {
-                sendMessage("Salut " + pseudo + ", comment ça va ?");
-            }
+                    switch (random)
+                    {
+                        case 0:
+                            sendMessage("Posé, merci.");
+                            break;
+                        case 1:
+                            sendMessage("Toujours en vie, apparemment.");
+                            break;
+                        case 2:
+                            sendMessage("J'en sais rien j'suis un bot.");
+                            break;
+                        case 3:
+                            sendMessage("Mal, ma copine m'a lâché. :(");
+                            break;
+                        case 4:
+                            sendMessage("Je sais pas, devine.");
+                            break;
+                        case 5:
+                            sendMessage("Demande à Darkfly, c'est pas à moi de décider.");
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
-            else if(stringSearch(neutralMessage,"au revoir darkbot")
-                || stringSearch(neutralMessage,"bonne nuit darkbot")
-                || stringSearch(neutralMessage,"bonne journee darkbot")
-                || stringSearch(neutralMessage,"a la prochaine darkbot")
-                || stringSearch(neutralMessage,"bye darkbot")
-                || stringSearch(neutralMessage,"ciao darkbot")
-                || stringSearch(neutralMessage,"a plus darkbot")
-                || stringSearch(neutralMessage,"a toute darkbot")
-                || stringSearch(neutralMessage,"a tout a lheure darkbot")
-                || stringSearch(neutralMessage,"a tantot darkbot")
-                || stringSearch(neutralMessage,"a bientot darkbot"))
-            {
-                sendMessage("À très bientôt " + pseudo + ", j'espère. o/");
-            }
+                else if(stringSearch(neutralMessage,"autant pour moi"))
+                {
+                    sendMessage("Au temps*");
+                }
 
-            else if(stringSearch(neutralMessage,"thedarkbot"))
-            {
-                sendMessage("On est entre potes " + pseudo + ", tu peux m'appeler Darkbot. <3");
+                else if(stringSearch(neutralMessage, "nightbot tried") && pseudo.compare("nightbot") == 0)
+                {
+                    sendMessage("Tg Nightbot, tu sers à rien.");
+                }
+
+                else if(stringSearch(neutralMessage,"salut darkbot")
+                    || stringSearch(neutralMessage,"bonjour darkbot")
+                    || stringSearch(neutralMessage,"bonsoir darkbot")
+                    || stringSearch(neutralMessage,"yo darkbot")
+                    || stringSearch(neutralMessage,"yop darkbot")
+                    || stringSearch(neutralMessage,"coucou darkbot")
+                    || stringSearch(neutralMessage,"cc darkbot")
+                    || stringSearch(neutralMessage,"slt darkbot")
+                    || stringSearch(neutralMessage,"hey darkbot"))
+                {
+                    sendMessage("Salut " + pseudo + ", comment ça va ?");
+                }
+
+                else if(stringSearch(neutralMessage,"au revoir darkbot")
+                    || stringSearch(neutralMessage,"bonne nuit darkbot")
+                    || stringSearch(neutralMessage,"bonne journee darkbot")
+                    || stringSearch(neutralMessage,"a la prochaine darkbot")
+                    || stringSearch(neutralMessage,"bye darkbot")
+                    || stringSearch(neutralMessage,"ciao darkbot")
+                    || stringSearch(neutralMessage,"a plus darkbot")
+                    || stringSearch(neutralMessage,"a toute darkbot")
+                    || stringSearch(neutralMessage,"a tout a lheure darkbot")
+                    || stringSearch(neutralMessage,"a tantot darkbot")
+                    || stringSearch(neutralMessage,"a bientot darkbot"))
+                {
+                    sendMessage("À très bientôt " + pseudo + ", j'espère. o/");
+                }
             }
 
             //COMMANDES
@@ -682,16 +700,21 @@ void IrcBot::msgHandel(char * buf)
                         sendMessage(pseudo + ", " + editCommand(commandToEdit, textToEdit));
                     }
                 }
-                else if(command.compare("desactive")== 0)
-                    {
-                        sendMessage("Désactivation... À la prochaine o/");
-                        activate = false;
-                    }
-                else if(command.compare("active") == 0)
-                    {
-                        activate = true;
-                        sendMessage("Activation... Salut tout le monde !");
-                    }
+                else if(command.compare("mute")== 0)
+                {
+                    sendMessage("Mode muet activé.");
+                    muted = true;
+                }
+                else if(command.compare("unmute") == 0)
+                {
+                    muted = false;
+                    sendMessage("Mode muet désactivé.");
+                }
+                else if(command.compare("desactive") == 0)
+                {
+                    sendMessage("Désactivation... À la prochaine o/");
+                    activate = false;
+                }
                 else if(command.compare("prevu") == 0)
                 {
                     string argument(getArgument(message));
@@ -706,6 +729,19 @@ void IrcBot::msgHandel(char * buf)
                         sendMessage("Message reçu : aucun live de prévu ce soir. Flûte de zut.");
                     }
                 }
+                else if(command.compare("fini") == 0)
+                {
+                    string argument(getArgument(message));
+                    if(argument.compare("oui") == 0)
+                    {
+                        finished = true;
+                        sendMessage("Message reçu : le live est terminé.");
+                    }
+                    else if(argument.compare("non") == 0)
+                    {
+                        finished = false;
+                    }
+                }
                 else if(command.compare("nazi") == 0)
                 {
                     string argument(getArgument(message));
@@ -714,10 +750,24 @@ void IrcBot::msgHandel(char * buf)
                         nazi = true;
                         sendMessage("Mode nazi activé. Ça va faire mal. MrDestructoid");
                     }
-                    else if(argument.compare("off"))
+                    else if(argument.compare("off") == 0)
                     {
                         nazi = false;
                         sendMessage("Mode nazi désactivé. On s'est bien marré quand même !");
+                    }
+                }
+                else if(command.compare("interaction") == 0)
+                {
+                    string argument(getArgument(message));
+                    if(argument.compare("on") == 0)
+                    {
+                        interaction = true;
+                        sendMessage("Réponses automatiques activées. Flemmards de modos, va.");
+                    }
+                    else if(argument.compare("off") == 0)
+                    {
+                        interaction = false;
+                        sendMessage("Réponses automatiques désactivées. Enfin un peu de glande.");
                     }
                 }
                 else if(command.compare("insulte") == 0)
@@ -800,6 +850,20 @@ void IrcBot::msgHandel(char * buf)
                 addOp(str);
             else if(stringSearch(str, "-o"))
                 delOp(str);
+        }
+    }
+    else
+    {
+        string message = getMessage(str);
+        string pseudo = getPseudo(str);
+        if(stringSearch(message,"?") && (isOp(pseudo) || pseudo.compare("thedarkfly") == 0))
+        {
+            string command(getCommand(message));
+            if(command.compare("active") == 0)
+            {
+                activate = true;
+                sendMessage("Activation... Salut tout le monde ! o/");
+            }
         }
     }
 }

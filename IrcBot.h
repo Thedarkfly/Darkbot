@@ -78,6 +78,9 @@ private:
 	bool livePrevu;
 	bool activate;
 	bool nazi;
+	bool muted;
+	bool finished;
+	bool interaction;
 	std::vector<std::string> commands[2];
 	std::vector<std::string> ops;
 	int punishmentTable[7];
