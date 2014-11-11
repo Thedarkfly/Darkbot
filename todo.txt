@@ -4,5 +4,5 @@ V Bug wtf c'quoi ce truc
 V Mettre à jour les commands
 V bonne nuit - au revoir
 V insulter ?
-V random
-- Commandes modo
+X random
+V Commandes modo

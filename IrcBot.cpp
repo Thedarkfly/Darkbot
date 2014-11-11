@@ -717,7 +717,7 @@ void IrcBot::msgHandel(char * buf)
                     else if(argument.compare("off"))
                     {
                         nazi = false;
-                        sendMessage("Monde nazi désactivé. On s'est bien marré quand même !");
+                        sendMessage("Mode nazi désactivé. On s'est bien marré quand même !");
                     }
                 }
                 else if(command.compare("insulte") == 0)
@@ -781,12 +781,12 @@ void IrcBot::msgHandel(char * buf)
 
 
             //MODERATION AUTOMATIQUE
-            if(capsNbr(message) > 15) && !isOp(pseudo))
+            if(nazi && capsNbr(message) > 15 && !isOp(pseudo) && pseudo.compare("thedarkfly") != 0)
             {
                 timeout(pseudo, 1);
             }
 
-            if(emoteNbr(message) > 5) && !isOp(pseudo))
+            if(nazi && emoteNbr(message) > 5 && !isOp(pseudo) && pseudo.compare("thedarkfly") != 0)
             {
                 timeout(pseudo, 1);
             }
