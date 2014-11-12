@@ -1,3 +1,6 @@
+	?info
+		Je suis un bot conçu et programmé par Thedarkfly. Si je fais de la merde, veuillez le prévenir et l'insulter. Merci.
+
 MODIFIE L'ETAT DU BOT
 	?active
 		Active le bot.
@@ -22,7 +25,7 @@ ENVOIE DES INFORMATIONS AU BOT
 	?fini oui/non
 		Indique au bot si le live est terminé.
 
-COMMANDES
+AJOUT/SUPPRESSION COMMANDES
 	?addcom ?commande texte
 		Ajoute la commande ?commande, à laquelle Darkbot répondra le texte.
 	?editcom ?commande texte
@@ -41,3 +44,43 @@ MODERATION MANUELLE
 		Bannit définitivement le pseudo.
 	?unban pseudo
 		Débannit défnitivement le pseudo.
+
+COMMANDES
+	?abo
+		L'abonnement est converti en goûters pour Laink et Terracid et vous donne une belle banane dans le tchat : http://static-cdn.jtvnw.net/jtv_user_pictures/panel-31289086-image-0e473e7cb7e661ba-320.jpeg
+	?ckan
+		"c kan le prochin live". ON SAIT PAS. OK. T'es relou vas-y. Mais on t'aime bien quand même. Clique sur suivre sous le live + suis nous sur les réseaux sociaux pour être prévenu du prochain live.
+	?comm
+		Les commandes sont réservées aux modos et à Darkfly. Noraj.
+	?decal
+		Les quinze minutes de décalage sont nécessaires pour éviter que vous stalkiez, bande de petits coquins.
+	?drop
+		On sait que ça drop/lag, on n'y peut rien et si vous continuez à le répéter on va vous péter la gueule. <3
+	?em
+		Les émoticônes sont réservés aux abonnés. Noraj. http://static-cdn.jtvnw.net/jtv_user_pictures/panel-31289086-image-bb31661e56512072-320.jpeg
+	?ffz
+		Installe l'extension FrankerFacez pour avoir des émotes gratuites. http://static-cdn.jtvnw.net/jtv_user_pictures/panel-31289086-image-5a5bce64ed602289-320.jpeg
+	?gooby
+		pls.
+	?gydias
+		LA PUTE !
+	?laink
+		TOP FR
+	?mail
+		Wankil : coucou@wankil.fr Laink : lainkk@gmail.com Terracid : dlaguionie@gmail.com
+	?patrick
+		http://lepetitbonhommeenmouss.eu/
+	?playlist
+		Playlist de Laink : https://docs.google.com/file/d/0B_pzHqwQ7OJwb2dwWGVhZWhNdm8
+	?pubs
+		N'oubliez pas de désactiver AdBlock pour donner de bons goûters à Laink et Terracid !
+	?souka
+		LOHR.
+	?steam
+		Rejoins le groupe steam de Wankil et joue avec tous les fans de la banane dans un grand canapé : http://steamcommunity.com/groups/wankil
+	?usul
+		SALO
+	?vod
+		En manque ? Ça ne va pas fort ? Revois les anciens lives avec nostalgie : https://www.youtube.com/channel/UCY3Uw6Vdkk8KvY5fEq1iTpA
+	?reddit
+		Venez partager ce que vous avez fait/trouvé sur le reddit Wankil ! http://wankil.reddit.com
