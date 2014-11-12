@@ -1,0 +1,43 @@
+MODIFIE L'ETAT DU BOT
+	?active
+		Active le bot.
+	?desactive
+		Désactive le bot.
+
+	?interaction on/off
+		Enclenche les réponses automatiques.
+
+	?mute
+		Enclenche le mode muet.
+	?unmute
+		Sort le bot du mode muet.
+
+	?nazi on/off
+		Enclenche la modération automatique.
+
+ENVOIE DES INFORMATIONS AU BOT
+	?prevu oui/non
+		Indique au bot si un live est prévu le soir même ou pas.
+
+	?fini oui/non
+		Indique au bot si le live est terminé.
+
+COMMANDES
+	?addcom ?commande texte
+		Ajoute la commande ?commande, à laquelle Darkbot répondra le texte.
+	?editcom ?commande texte
+		Modifie la commande ?commande et remplace la réponse par le texte.
+	?delcom ?commande
+		Supprime la commande ?commande
+	?insulte pseudo
+		Insulte le pseudo.
+
+MODERATION MANUELLE
+	?purge pseudo
+		Timeout le pseudo pendant une seconde.
+	?timeout pseudo
+		Timeout le pseudo pendant dix minutes.
+	?ban pseudo
+		Bannit définitivement le pseudo.
+	?unban pseudo
+		Débannit défnitivement le pseudo.
