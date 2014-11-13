@@ -4,11 +4,16 @@ V Bug wtf c'quoi ce truc
 V Mettre à jour les commands
 V bonne nuit - au revoir
 V insulter ?
-X random
+? random
 V Commandes modo
 V live terminé
-- accumulation peine
+(- accumulation peine)
 V mute
 V stream & live prévu ?
+(- insultes random)
+V TO pavés
+V TO spam de lettres
+V Nombre max (pavé - majs - émotes - lettres id) modifiable et (V)enregistrable
+V Emotes (V)ajoutables et (V)enregistrables
 
 - KIWI
