@@ -42,10 +42,6 @@ public:
     void commandCalled(std::string com);
     std::string editCommand(std::string com, std::string txt);
 
-    int compteurMaj(std::string msg); //TODO
-    int compteurMaxChar(std::string msg); //TODO
-    int compteurEmote(std::string msg); //TODO
-
     void addOp(std::string msg);
     void delOp(std::string msg);
     bool isOp(std::string pseudo);
@@ -56,6 +52,13 @@ public:
     int arrOccurrences(std::string toSearch, std::vector<std::string> arr);
     int capsNbr(std::string toSearch);
     int emoteNbr(std::string toSearch);
+    int sameCharNbr(std::string toSearch);
+
+    std::vector<std::string> readEmotesFile();
+    void saveEmotes();
+
+	std::vector<int> readLimitsFile();
+	void saveLimits();
 
 private:
 	char *port;
@@ -84,6 +87,13 @@ private:
 	std::vector<std::string> commands[2];
 	std::vector<std::string> ops;
 	int punishmentTable[7];
+
+	std::vector<std::string> emotes;
+
+	int limitePave;
+	int limiteCaps;
+	int limiteEmotes;
+	int limiteLettres;
 
 };
 

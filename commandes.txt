@@ -44,6 +44,20 @@ MODERATION MANUELLE
 		Bannit définitivement le pseudo.
 	?unban pseudo
 		Débannit défnitivement le pseudo.
+	?ciao pseudo
+		Timeout le pseudo pendant huit heures.
+
+MODIFICATION MEMOIRE
+	?addemote emoticone
+		Ajoute une émoticône dans la liste (pour éviter le spam émote)
+	?setcapslimit nombre
+		Détermine le nombre maximal le majuscules dans un message (pour éviter caps lock)
+	?setcharlimit nombre
+		Détermine le nombre maximal de caractères dans un message (pour éviter les pavés)
+	?setemotelimit nombre
+		Détermine le nombre maximal d'émoticônes dans unm essage (pour éviter le spam émote)
+	?setletterspamlimit nombre
+		Détermine le nombre maximal de caractères identiques à la suite (pour éviter le spam lettre !!!!!!!!!!!!!!!)
 
 COMMANDES
 	?abo
@@ -84,3 +98,5 @@ COMMANDES
 		En manque ? Ça ne va pas fort ? Revois les anciens lives avec nostalgie : https://www.youtube.com/channel/UCY3Uw6Vdkk8KvY5fEq1iTpA
 	?reddit
 		Venez partager ce que vous avez fait/trouvé sur le reddit Wankil ! http://wankil.reddit.com
+	?raid
+		ATTENTION, pour participer au raid, veuillez respecter ces quelques règles : 1. Ne dites le message de raid QU'UNE FOIS. 2. Adoptez la LANGUE du streamer. Si vous ne la parlez pas, taisez-vous. 3. Tout abus sera sanctionné d'un BAN DÉFINITIF sur le chat Wankil.

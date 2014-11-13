@@ -39,6 +39,29 @@ IrcBot::IrcBot(char * _nick, char * _pass, char * _channel)
 
     commands[0] = readCommandsFile();
     commands[1] = readTextsFile();
+
+    emotes = readEmotesFile();
+    vector<int> limits = readLimitsFile();
+    limitePave = limits[0];
+    limiteCaps = limits[1];
+    limiteEmotes = limits[2];
+    limiteLettres = limits[3];
+
+    punishmentTable[0] = 5;
+    punishmentTable[1] = 60;
+    punishmentTable[2] = 300;
+    punishmentTable[3] = 600;
+    punishmentTable[4] = 1800;
+    punishmentTable[5] = 3600;
+    punishmentTable[6] = 28800;
+
+    livePrevu = false;
+    activate = true;
+    nazi = false;
+    muted = false;
+    finished = false;
+    interaction = true;
+
 }
 
 IrcBot::~IrcBot()
@@ -48,20 +71,7 @@ IrcBot::~IrcBot()
 
 void IrcBot::start()
 {
-    livePrevu = false;
-    activate = true;
-    nazi = false;
-    muted = false;
-    finished = false;
-    interaction = true;
     srand(time(0));
-    punishmentTable[0] = 5;
-    punishmentTable[1] = 60;
-    punishmentTable[2] = 300;
-    punishmentTable[3] = 600;
-    punishmentTable[4] = 1800;
-    punishmentTable[5] = 3600;
-    punishmentTable[6] = 28800;
 
 	struct addrinfo hints, *servinfo;
 
@@ -374,6 +384,58 @@ void IrcBot::sendMessage(string msg)
     }
 }
 
+vector<int> IrcBot::readLimitsFile()
+{
+    string line;
+    int i = 0;
+    ifstream file("limits[pave-majs-emote-lettres].dat");
+    vector<int> limits(4);
+
+    if(file.is_open())
+    {
+        while(getline(file, line))
+        {
+            switch(i)
+            {
+                case 0:
+                    istringstream(line) >> limits[0];
+                    break;
+                case 1:
+                    istringstream(line) >> limits[1];
+                    break;
+                case 2:
+                    istringstream(line) >> limits[2];
+                    break;
+                case 3:
+                    istringstream(line) >> limits[3];
+                    break;
+                default:
+                    break;
+            }
+            i++;
+        }
+        file.close();
+    }
+    return limits;
+}
+
+vector<string> IrcBot::readEmotesFile()
+{
+    vector<string> readEmotes;
+
+    string line;
+    ifstream file("emotes.dat");
+
+    if(file.is_open())
+    {
+        while(getline(file, line))
+        {
+            readEmotes.push_back(line);
+        }
+        file.close();
+    }
+    return readEmotes;
+}
 
 vector<string> IrcBot::readCommandsFile()
 {
@@ -499,6 +561,47 @@ string IrcBot::editCommand(string com, string txt)
         return "la commande ?" + com + " n'existe pas, bouffon.";
 }
 
+void IrcBot::saveLimits()
+{
+    ofstream file("limits[pave-majs-emote-lettres].dat");
+
+    if(file.is_open())
+    {
+        ostringstream p;
+        ostringstream c;
+        ostringstream e;
+        ostringstream l;
+
+        p << limitePave << "\n";
+        c << limiteCaps << "\n";
+        e << limiteEmotes << "\n";
+        l << limiteLettres << "\n";
+
+        file << p.str();
+        file << c.str();
+        file << e.str();
+        file << l.str();
+
+        file.close();
+    }
+}
+
+void IrcBot::saveEmotes()
+{
+    ofstream file("emotes.dat");
+    int i = 0;
+
+    if(file.is_open())
+    {
+        for(vector<string>::iterator it = emotes.begin(); it != emotes.end(); it++)
+        {
+            file << emotes[i] + "\n";
+            i++;
+        }
+        file.close();
+    }
+}
+
 void IrcBot::saveCommands()
 {
     ofstream file ("commands.dat");
@@ -528,21 +631,6 @@ void IrcBot::commandCalled(string com)
         }
         else index++;
     }
-}
-
-int IrcBot::compteurMaj(string msg)
-{
-    return 0;
-}
-
-int IrcBot::compteurMaxChar(string msg)
-{
-    return 0;
-}
-
-int IrcBot::compteurEmote(string msg)
-{
-    return 0;
 }
 
 void IrcBot::msgHandel(char * buf)
@@ -631,30 +719,32 @@ void IrcBot::msgHandel(char * buf)
                     sendMessage("Tg Nightbot, tu sers à rien.");
                 }
 
-                else if(stringSearch(neutralMessage,"salut darkbot")
-                    || stringSearch(neutralMessage,"bonjour darkbot")
-                    || stringSearch(neutralMessage,"bonsoir darkbot")
-                    || stringSearch(neutralMessage,"yo darkbot")
-                    || stringSearch(neutralMessage,"yop darkbot")
-                    || stringSearch(neutralMessage,"coucou darkbot")
-                    || stringSearch(neutralMessage,"cc darkbot")
-                    || stringSearch(neutralMessage,"slt darkbot")
-                    || stringSearch(neutralMessage,"hey darkbot"))
+                else if((stringSearch(neutralMessage,"salut")
+                    || stringSearch(neutralMessage,"bonjour")
+                    || stringSearch(neutralMessage,"bonsoir")
+                    || stringSearch(neutralMessage,"yo")
+                    || stringSearch(neutralMessage,"yop")
+                    || stringSearch(neutralMessage,"coucou")
+                    || stringSearch(neutralMessage,"cc")
+                    || stringSearch(neutralMessage,"slt")
+                    || stringSearch(neutralMessage,"hey"))
+                    && stringSearch(neutralMessage,"darkbot"))
                 {
                     sendMessage("Salut " + pseudo + ", comment ça va ?");
                 }
 
-                else if(stringSearch(neutralMessage,"au revoir darkbot")
-                    || stringSearch(neutralMessage,"bonne nuit darkbot")
-                    || stringSearch(neutralMessage,"bonne journee darkbot")
-                    || stringSearch(neutralMessage,"a la prochaine darkbot")
-                    || stringSearch(neutralMessage,"bye darkbot")
-                    || stringSearch(neutralMessage,"ciao darkbot")
-                    || stringSearch(neutralMessage,"a plus darkbot")
-                    || stringSearch(neutralMessage,"a toute darkbot")
-                    || stringSearch(neutralMessage,"a tout a lheure darkbot")
-                    || stringSearch(neutralMessage,"a tantot darkbot")
-                    || stringSearch(neutralMessage,"a bientot darkbot"))
+                else if((stringSearch(neutralMessage,"au revoir")
+                    || stringSearch(neutralMessage,"bonne nuit")
+                    || stringSearch(neutralMessage,"bonne journee")
+                    || stringSearch(neutralMessage,"a la prochaine")
+                    || stringSearch(neutralMessage,"bye")
+                    || stringSearch(neutralMessage,"ciao")
+                    || stringSearch(neutralMessage,"a plus")
+                    || stringSearch(neutralMessage,"a toute")
+                    || stringSearch(neutralMessage,"a tout a lheure")
+                    || stringSearch(neutralMessage,"a tantot")
+                    || stringSearch(neutralMessage,"a bientot"))
+                    && stringSearch(neutralMessage,"darkbot"))
                 {
                     sendMessage("À très bientôt " + pseudo + ", j'espère. o/");
                 }
@@ -770,6 +860,53 @@ void IrcBot::msgHandel(char * buf)
                         sendMessage("Réponses automatiques désactivées. Enfin un peu de glande.");
                     }
                 }
+                else if(command.compare("addemote") == 0)
+                {
+                    string argument(getArgument(message));
+
+                    emotes.push_back(argument);
+                    saveEmotes();
+                    sendMessage("Émoticône ajoutée avec succès : " + argument + ".");
+                }
+                else if(command.compare("setcapslimit") == 0)
+                {
+                    string argument(getArgument(message));
+
+                    istringstream(argument) >> limiteCaps;
+
+                    saveLimits();
+                    sendMessage("Limite du nombre de majuscules fixée à " + argument + ".");
+                }
+                else if(command.compare("setcharlimit") == 0)
+                {
+                    string argument(getArgument(message));
+
+                    istringstream(argument) >> limitePave;
+
+                    saveLimits();
+                    sendMessage("Limite du nombre de caractères fixée à " + argument + ".");
+
+                }
+                else if(command.compare("setemotelimit") == 0)
+                {
+                    string argument(getArgument(message));
+
+                    istringstream(argument) >> limiteEmotes;
+
+                    saveLimits();
+                    sendMessage("Limite du nombre d'émoticônes fixée à " + argument + ".");
+
+                }
+                else if(command.compare("setletterspamlimit") == 0)
+                {
+                    string argument(getArgument(message));
+
+                    istringstream(argument) >> limiteLettres;
+
+                    saveLimits();
+                    sendMessage("Limite du nombre de lettres identiques fixée à " + argument + ".");
+
+                }
                 else if(command.compare("insulte") == 0)
                 {
                     string argument(getArgument(message));
@@ -806,39 +943,58 @@ void IrcBot::msgHandel(char * buf)
                 {
                     string argument(getArgument(message));
                     timeout(argument, 1);
+                    sendMessage(argument + " purgé avec succès.");
                 }
                 else if(command.compare("timeout") == 0)
                 {
                     string argument(getArgument(message));
                     timeout(argument, 60);
+                    sendMessage(argument + " banni pendant dix minutes.");
                 }
                 else if(command.compare("ban") == 0)
                 {
                     string argument(getArgument(message));
                     timeout(argument, -1);
+                    sendMessage(argument + " banni définitivement.");
                 }
                 else if(command.compare("unban") == 0)
                 {
                     string argument(getArgument(message));
                     timeout(argument, 0);
+                    sendMessage(argument + " a retrouvé le droit à la parole.");
                 }
                 else if(command.compare("ciao") == 0)
                 {
                     string argument(getArgument(message));
                     timeout(argument, 28800);
+                    sendMessage("À la prochaine, " + argument + " !");
                 }
             }
 
 
             //MODERATION AUTOMATIQUE
-            if(nazi && capsNbr(message) > 15 && !isOp(pseudo) && pseudo.compare("thedarkfly") != 0)
+            if(nazi && capsNbr(message) > limiteCaps)// && !isOp(pseudo) && pseudo.compare("thedarkfly") != 0)
             {
                 timeout(pseudo, 1);
+                sendMessage(pseudo + ", mollo sur les majuscules, merci.");
             }
 
-            if(nazi && emoteNbr(message) > 5 && !isOp(pseudo) && pseudo.compare("thedarkfly") != 0)
+            if(nazi && emoteNbr(message) > limiteEmotes)// && !isOp(pseudo) && pseudo.compare("thedarkfly") != 0)
             {
                 timeout(pseudo, 1);
+                sendMessage(pseudo + ", doucement avec les émoticônes, merci.");
+            }
+
+            if(nazi && message.length() > limitePave)// && !isOp(pseudo) && pseudo.compare("thedarkfly") != 0)
+            {
+                timeout(pseudo, 1);
+                sendMessage(pseudo + ", pas de pavé, merci.");
+            }
+
+            if(nazi && sameCharNbr(message) > limiteLettres)// && !isOp(pseudo) && pseudo.compare("thedarkfly") != 0)
+            {
+                timeout(pseudo, 1);
+                sendMessage(pseudo + ", pas de spam, merci.");
             }
 
         }
@@ -972,33 +1128,26 @@ int IrcBot::capsNbr(string toSearch)
 
 int IrcBot::emoteNbr(string toSearch)
 {
-    string arr[] = {"4Head", "aneleanele", "ArsonNoSexy",
-        "AsianGlow", "AtGL", "AtIvy", "AtWW", "BabyRage", "BatChest",
-        "BCWarrior", "BibleThump", "BigBrother", "BionicBunion", "BlargNaut",
-        "BloodTrail", "BORT", "BrainSlug", "BrokeBack", "BuddhaBar",
-        "CougarHunt", "DAESuppy", "DansGame", "DatSheffy", "DBstyle",
-        "DogFace", "EagleEye", "EleGiggle", "EvilFetus", "FailFish",
-        "FPSMarksman", "FrankerZ", "FreakinStinkin", "FUNgineer",
-        "FuzzyOtterOO", "GasJoker", "GingerPower", "GrammarKing",
-        "HassaanChop", "HassanChop", "HotPokket", "HumbleLife",
-        "ItsBoshyTime", "Jebaited", "JKanStyle", "JonCarnage",
-        "KAPOW", "Kappa", "Keepo", "KevinTurtle", "Kippa", "Kreygasm",
-        "KZassault", "KZcover", "KZguerilla", "KZhelghast", "KZowl",
-        "KZskull", "MechaSupes", "MrDestructoid", "MVGame", "NightBat",
-        "NinjaTroll", "NoNoSpot", "noScope", "OMGScoots", "OneHand",
-        "OpieOP", "OptimizePrime", "panicBasket", "PanicVis", "PazPazowitz",
-        "PeoplesChamp", "PermaSmug", "PicoMause", "PipeHype", "PJHarley",
-        "PJSalt", "PMSTwin", "PogChamp", "Poooound", "PRChase", "PunchTrees",
-        "RaccAttack", "RalpherZ", "RedCoat", "ResidentSleeper", "RitzMitz",
-        "RuleFive", "Shazam", "shazamicon", "ShazBotstix", "ShibeZ", "SMOrc",
-        "SMSkull", "SoBayed", "SoonerLater", "SriHead", "SSSsss",
-        "StoneLightning", "StrawBeary", "SuperVinlin", "SwiftRage",
-        "TehFunrun", "TF2John", "TheRinger", "TheTarFu", "TheThing",
-        "ThunBeast", "TinyFace", "TooSpicy", "TriHard", "UleetBackup",
-        "UncleNox", "UnSane", "Volcania", "WholeWheat", "WinWaker",
-        "WTRuck", "WutFace", "YouWHY"};
-
-    vector<string> emotes (arr, arr + sizeof(arr) / sizeof(string));
-
     return arrOccurrences(toSearch, emotes);
+}
+
+int IrcBot::sameCharNbr(string toSearch)
+{
+    int acc1 = 0;
+    int acc2 = 1;
+    int n = 0;
+
+    for(string::iterator it = toSearch.begin(); it != toSearch.end() - 1; it++)
+    {
+        if(toSearch[acc1] == toSearch[acc2])
+        {
+            n++;
+        }
+        else
+            n = 0;
+        acc1++;
+        acc2++;
+    }
+
+    return n;
 }
